@@ -16,9 +16,9 @@ pub async fn response_mapper_main(
     println!("->> {:<12} - main_response_mapper", "RES_MAPPER");
 
     let uuid = Uuid::new_v4();
+    
     let service_error = res.extensions().get::<Error>();
     let client_status_error = service_error.map(|status_error| status_error.client_status_error());
-
     let error_response = client_status_error
         .as_ref()
         .map(|(status_code, client_error)| {

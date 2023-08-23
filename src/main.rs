@@ -55,7 +55,7 @@ async fn main() -> Result<()> {
                 .layer(HandleErrorLayer::new(|_: BoxError| async {
                     http::StatusCode::REQUEST_TIMEOUT
                 }))
-                .timeout(Duration::from_secs(2)), // .layer(CatchPanicLayer::custom(error::handle_panic)),
+                .timeout(Duration::from_secs(2)),
         )
         .fallback_service(routes_static());
 
