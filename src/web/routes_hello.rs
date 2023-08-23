@@ -20,13 +20,9 @@ struct HelloParams {
 async fn handler_hello(Query(params): Query<HelloParams>) -> impl IntoResponse {
     let name = params.name.as_deref().unwrap_or("world");
 
-    println!("->> {:<12} - handler_hello: name={name:?}", "HANDLER");
-
     Html(format!("Hello, <strong>{name}</strong>!"))
 }
 
 async fn handler_hello2(Path(name): Path<String>) -> impl IntoResponse {
-    println!("->> {:<12} - handler_hello2: name={name:?}", "HANDLER");
-
     Html(format!("Hello, <strong>{name}</strong>!"))
 }

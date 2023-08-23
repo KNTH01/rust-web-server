@@ -11,15 +11,12 @@ async fn create_todo(
     ctx: Ctx,
     Json(todo_fc): Json<TodoForCreate>,
 ) -> Result<Json<Todo>> {
-    println!("->> {:<12} - create_todo", "HANDLER");
-
     let todo = mc.create_todo(ctx, todo_fc).await?;
 
     Ok(Json(todo))
 }
 
 async fn get_todos(State(mc): State<ModelController>, ctx: Ctx) -> Result<Json<Vec<Todo>>> {
-    println!("->> {:<12} - get_todos", "HANDLER");
     let todos = mc.get_todos(ctx).await?;
 
     Ok(Json(todos))
@@ -30,8 +27,6 @@ async fn delete_todo(
     ctx: Ctx,
     Path(id): Path<u64>,
 ) -> Result<Json<Todo>> {
-    println!("->> {:<12} - delete_todo", "HANDLER");
-
     let todo = mc.delete_todo(ctx, id).await?;
 
     Ok(Json(todo))

@@ -8,6 +8,7 @@ use axum::{
 };
 use lazy_regex::regex_captures;
 use tower_cookies::{Cookie, Cookies};
+use tracing::debug;
 
 pub async fn mw_ctx_resolver<B>(
     _mc: State<ModelController>,
@@ -15,8 +16,6 @@ pub async fn mw_ctx_resolver<B>(
     mut req: Request<B>,
     next: Next<B>,
 ) -> Result<Response> {
-    println!("->> {:<12} - mw_ctx_resolver", "MIDDLEWARE");
-
     let auth_token = cookies
         .get(web::AUTH_TOKEN)
         .map(|cookie| cookie.value().to_string());
@@ -38,6 +37,13 @@ pub async fn mw_ctx_resolver<B>(
     }
 
     // store the result_ctx in the request extension
+    debug!(
+        "insert Ctx: {:?} into request",
+        match result_ctx.as_ref() {
+            Ok(ctx) => Some(ctx),
+            Err(_) => None,
+        }
+    );
     req.extensions_mut().insert(result_ctx);
 
     Ok(next.run(req).await)
@@ -48,7 +54,7 @@ pub async fn mw_require_auth<B>(
     req: Request<B>,
     next: Next<B>,
 ) -> Result<Response> {
-    println!("->> {:<12} - mw_require_auth", "MIDDLEWARE");
+    debug!("middleware mw_require_auth called");
 
     ctx?;
 
@@ -73,8 +79,6 @@ impl<S: Send + Sync> FromRequestParts<S> for Ctx {
     type Rejection = Error;
 
     async fn from_request_parts(req: &mut Parts, _state: &S) -> Result<Self> {
-        println!("->> {:<12} - Ctx", "EXTRACTOR");
-
         req.extensions
             .get::<Result<Ctx>>()
             .ok_or(Error::AuthFailCtxNotFoundInReqExt)?

@@ -23,12 +23,12 @@ pub enum Error {
 
 impl IntoResponse for Error {
     fn into_response(self) -> Response {
-        debug!("IntoResponse for Error: {:?}", self);
         
         // create a place holder for Axum response
         let mut response = StatusCode::INTERNAL_SERVER_ERROR.into_response();
 
         // insert the Error into the response
+        debug!("insert {:?} into response from into_response() for Error", self);
         response.extensions_mut().insert(self);
 
         response
