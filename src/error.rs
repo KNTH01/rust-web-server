@@ -36,7 +36,7 @@ impl IntoResponse for Error {
 }
 
 impl Error {
-    pub fn client_status_error(&self) -> (StatusCode, ClientError) {
+    pub fn map_server_client_error(&self) -> (StatusCode, ClientError) {
         #[allow(unreachable_patterns)]
         match self {
             // login

@@ -1,10 +1,10 @@
-use std::time::{SystemTime, UNIX_EPOCH};
-
 use crate::{ctx::Ctx, error::ClientError, Error, Result};
 use axum::http::{Method, Uri};
 use serde::Serialize;
 use serde_json::{json, Value};
 use serde_with::skip_serializing_none;
+use std::time::{SystemTime, UNIX_EPOCH};
+use tracing::debug;
 use uuid::Uuid;
 
 #[skip_serializing_none]
@@ -31,7 +31,7 @@ pub async fn log_request(
     req_method: Method,
     uri: Uri,
     ctx: Option<Ctx>,
-    service_error: Option<&Error>,
+    server_error: Option<&Error>,
     client_error: Option<ClientError>,
 ) -> Result<()> {
     let ts = SystemTime::now()
@@ -39,8 +39,8 @@ pub async fn log_request(
         .unwrap()
         .as_millis();
 
-    let error_type = service_error.map(|e| e.as_ref().to_string());
-    let error_data = serde_json::to_value(service_error)
+    let error_type = server_error.map(|e| e.as_ref().to_string());
+    let error_data = serde_json::to_value(server_error)
         .ok()
         .and_then(|mut v| v.get_mut("data").map(|v| v.take()));
 
@@ -59,7 +59,7 @@ pub async fn log_request(
     };
 
     // TODO: send this to a log monitor
-    println!("->> log_request: \n{}", json!(log_line));
+    debug!("LOG REQUEST:\n------ log line:\n{}\n------", json!(log_line));
 
     Ok(())
 }
