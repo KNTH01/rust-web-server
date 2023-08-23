@@ -45,7 +45,7 @@ impl Error {
             // auth
             Self::AuthFailTokenNotValid
             | Self::AuthFailCtxNotFoundInReqExt
-            | Self::AuthFailNoAuthTokenCookie => (StatusCode::FORBIDDEN, ClientError::NO_AUTH),
+            | Self::AuthFailNoAuthTokenCookie => (StatusCode::FORBIDDEN, ClientError::NOT_AUTHENTICATED),
 
             // model
             Self::TodoDeleteFailIdNotFound { .. } => 
@@ -55,7 +55,7 @@ impl Error {
             // fallback
             _ => (
                 StatusCode::INTERNAL_SERVER_ERROR,
-                ClientError::SERVICE_ERROR,
+                ClientError::INTERNAL_SERVER_ERROR,
             ),
         }
     }
@@ -65,7 +65,7 @@ impl Error {
 #[allow(non_camel_case_types)]
 pub enum ClientError {
     LOGIN_FAIL,
-    NO_AUTH,
+    NOT_AUTHENTICATED,
     INVALID_PARAMS,
-    SERVICE_ERROR,
+    INTERNAL_SERVER_ERROR,
 }

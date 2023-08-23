@@ -17,8 +17,8 @@ struct RequestLogLine {
     user_id: Option<u64>,
 
     // http req attrs
-    req_method: String,
-    req_path: String,
+    method: String,
+    uri: String,
 
     // err attrs
     error_type: Option<String>,
@@ -28,7 +28,7 @@ struct RequestLogLine {
 
 pub async fn log_request(
     uuid: Uuid,
-    req_method: Method,
+    method: Method,
     uri: Uri,
     ctx: Option<Ctx>,
     server_error: Option<&Error>,
@@ -50,8 +50,8 @@ pub async fn log_request(
 
         user_id: ctx.map(|c| c.get_user_id()),
 
-        req_path: uri.to_string(),
-        req_method: req_method.to_string(),
+        uri: uri.to_string(),
+        method: method.to_string(),
 
         client_error_type: client_error.map(|e| e.as_ref().to_string()),
         error_type,
