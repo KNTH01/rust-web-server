@@ -6,6 +6,7 @@ use axum::routing::get_service;
 use axum::{http, middleware, BoxError, Router};
 use std::net::SocketAddr;
 use std::time::Duration;
+use tokio::signal;
 use tower::ServiceBuilder;
 use tower_cookies::CookieManagerLayer;
 use tower_http::services::ServeDir;
@@ -26,14 +27,12 @@ async fn main() -> Result<()> {
     tracing_subscriber::registry()
         .with(tracing_subscriber::EnvFilter::new(
             std::env::var("RUST_LOG")
-                .unwrap_or_else(|_| "hero_manager_axum=debug,tower_http=debug,sqlx=debug".into()),
+                .unwrap_or_else(|_| "rust_web_server=debug,tower_http=debug,sqlx=debug".into()),
         ))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
-
-    println!("->> LISTENING ON {addr}\n");
 
     let mc = ModelController::new().await?;
 
@@ -60,10 +59,11 @@ async fn main() -> Result<()> {
         )
         .fallback_service(routes_static());
 
-    info!("listening on {}", &addr);
+    info!("Listening on {}", &addr);
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
+        .with_graceful_shutdown(shutdown_signal())
         .await
         .unwrap();
 
@@ -74,3 +74,28 @@ fn routes_static() -> Router {
     Router::new().nest_service("/", get_service(ServeDir::new("./public")))
 }
 
+async fn shutdown_signal() {
+    let ctrl_c = async {
+        signal::ctrl_c()
+            .await
+            .expect("failed to install Ctrl+C handler");
+    };
+
+    #[cfg(unix)]
+    let terminate = async {
+        signal::unix::signal(signal::unix::SignalKind::terminate())
+            .expect("failed to install signal handler")
+            .recv()
+            .await;
+    };
+
+    #[cfg(not(unix))]
+    let terminate = std::future::pending::<()>();
+
+    tokio::select! {
+        _ = ctrl_c => {},
+        _ = terminate => {},
+    }
+
+    println!("signal received, starting graceful shutdown");
+}
